@@ -122,7 +122,8 @@
   </div>
 
   <script>
-    const scriptUrl = "https://script.google.com/macros/s/AKfycbzMUUVmTkbZr4tZsCNNeU-qYS2_uzx1NjH4ivJ8mtFWzke0Civk2fPzGFhtY1oPxOZTIQ/exec";
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbxWBwH6JrH_a7nEvbjr_Xmw_YAfEuQmWbibDVqFCih8a0UPPJKIt4buAoifHkjc73jJZg/exec";
     const sheetId = "1jUXCQgiCbY_o393mfvsrA6F_mMZIfjCAXQfazvX3W5Y";
     const sheetName = "GIC Inscritos";
     const senhaCorreta = "gic2024";
@@ -143,7 +144,7 @@
       };
 
       try {
-       await fetch(scriptUrl, {
+       await fetch(proxyUrl + targetUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dados)
