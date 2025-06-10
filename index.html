@@ -67,8 +67,15 @@
   <script>
     const scriptUrl = 'https://script.google.com/macros/s/AKfycby6cOMjA7AyXVGZAKbywWcbwQUXYqCrCE7LkF4pXptY5L1HRf2IfF9-K7xViWVGsX6N/exec';
 
-    const form = document.getElementById("formInscricao");
-    const mensagem = document.getElementById("mensagem");
+    const formSection = document.getElementById('form-section');
+    const loginSection = document.getElementById('login-section');
+    const adminSection = document.getElementById('admin-section');
+    const msg = document.getElementById('msg');
+
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const inscritosTableBody = document.querySelector('#inscritos-table tbody');
 
     // Senha admin (altere aqui)
     const ADMIN_PASSWORD = 'admin123';
@@ -78,34 +85,37 @@
       showAdmin();
     }
 
-    form.addEventListener("submit", async (e) => {
+    registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      msg.textContent = '';
 
-      const dados = {
-        nome: document.getElementById("nome").value,
-        nascimento: document.getElementById("nascimento").value,
-        idade: document.getElementById("idade").value,
-        posicao1: document.getElementById("posicao1").value,
-        posicao2: document.getElementById("posicao2").value,
-        classificacao: document.getElementById("classificacao").value
+      const data = {
+        nomeCompleto: document.getElementById('nomeCompleto').value,
+        dataNascimento: document.getElementById('dataNascimento').value,
+        idade: document.getElementById('idade').value,
+        posicao1: document.getElementById('posicao1').value,
+        posicao2: document.getElementById('posicao2').value,
+        classificacao: document.getElementById('classificacao').value,
       };
 
-     try {
-        await fetch(scriptUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(dados),
-          mode: "no-cors"
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/json' }
         });
-        mensagem.style.color = "green";
-        mensagem.textContent = "Inscrição enviada com sucesso!";
-        form.reset();
+        const result = await response.json();
+        if(result.result === 'success'){
+          msg.style.color = 'green';
+          msg.textContent = 'Inscrição enviada com sucesso!';
+          registerForm.reset();
+        } else {
+          msg.style.color = 'red';
+          msg.textContent = 'Erro ao enviar inscrição.';
+        }
       } catch (error) {
-        console.error(error);
-        mensagem.style.color = "red";
-        mensagem.textContent = "Erro ao enviar inscrição.";
+        msg.style.color = 'red';
+        msg.textContent = 'Erro na comunicação.';
       }
     });
 
@@ -137,7 +147,7 @@
       // Buscar dados da planilha (pode usar Google Sheets API, para simplificar vamos buscar CSV)
       try {
         // URL pública do CSV export da planilha (você precisa tornar a planilha pública para visualização)
-        const sheetId = 'COLE_AQUI_ID_DA_PLANILHA';
+        const sheetId = '1jUXCQgiCbY_o393mfvsrA6F_mMZIfjCAXQfazvX3W5Y';
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
 
         const res = await fetch(url);
