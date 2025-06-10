@@ -2,36 +2,24 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Granada Iate Clube - GIC</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 50px auto;
-      padding: 10px;
-    }
-    input, select, button {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    .mensagem {
-      text-align: center;
-      font-weight: bold;
-      color: red;
-    }
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    input, select, button { width: 100%; padding: 10px; margin: 8px 0; font-size: 16px; }
+    h1, h2 { text-align: center; }
+    .mensagem { text-align: center; font-weight: bold; margin-top: 10px; }
+    #admin-area { display: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    #login-admin { max-width: 300px; margin: 20px auto; }
   </style>
 </head>
 <body>
+
   <h1>Granada Iate Clube - GIC</h1>
   <h2>Cadastro de Jogador</h2>
-  
+
   <form id="formInscricao">
     <input type="text" id="nome" placeholder="Nome Completo" required />
     <input type="date" id="nascimento" required />
@@ -61,44 +49,134 @@
     <button type="submit">Enviar Inscrição</button>
   </form>
 
-  <p class="mensagem" id="mensagem"></p>
+  <p class="mensagem" id="msgForm"></p>
 
-  <script>
-    const scriptUrl = "https://script.google.com/macros/s/AKfycby6cOMjA7AyXVGZAKbywWcbwQUXYqCrCE7LkF4pXptY5L1HRf2IfF9-K7xViWVGsX6N/exec"; // sua URL aqui
+  <hr />
 
-    const form = document.getElementById("formInscricao");
-    const mensagem = document.getElementById("mensagem");
+  <div id="login-admin">
+    <h2>Login Admin</h2>
+    <input type="password" id="senhaAdmin" placeholder="Senha de administrador" />
+    <button id="btnLoginAdmin">Entrar</button>
+    <p class="mensagem" id="msgLogin"></p>
+  </div>
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  <div id="admin-area">
+    <h2>Lista de Inscritos</h2>
+    <button id="btnLogout">Sair</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Nascimento</th>
+          <th>Idade</th>
+          <th>Posição 1</th>
+          <th>Posição 2</th>
+          <th>Classificação</th>
+          <th>Data Cadastro</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaInscritos"></tbody>
+    </table>
+  </div>
 
-      const dados = {
-        nome: document.getElementById("nome").value,
-        nascimento: document.getElementById("nascimento").value,
-        idade: document.getElementById("idade").value,
-        posicao1: document.getElementById("posicao1").value,
-        posicao2: document.getElementById("posicao2").value,
-        classificacao: document.getElementById("classificacao").value
-      };
+<script>
+  const scriptUrl = "COLE_AQUI_SEU_LINK_DO_APLICATIVO_WEB_DO_GAS";
+  const sheetId = "SEU_SHEET_ID_AQUI";
+  const sheetName = "GIC Inscritos";
+  const senhaCorreta = "gic2024";
 
-      try {
-        await fetch(scriptUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(dados),
-          mode: "no-cors"
-        });
-        mensagem.style.color = "green";
-        mensagem.textContent = "Inscrição enviada com sucesso!";
+  const form = document.getElementById('formInscricao');
+  const msgForm = document.getElementById('msgForm');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const dados = {
+      nome: document.getElementById('nome').value,
+      nascimento: document.getElementById('nascimento').value,
+      idade: document.getElementById('idade').value,
+      posicao1: document.getElementById('posicao1').value,
+      posicao2: document.getElementById('posicao2').value,
+      classificacao: document.getElementById('classificacao').value
+    };
+
+    try {
+      const res = await fetch(scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      });
+
+      const json = await res.json();
+
+      if(json.status === 'sucesso'){
+        msgForm.style.color = 'green';
+        msgForm.textContent = 'Inscrição enviada com sucesso!';
         form.reset();
-      } catch (error) {
-        console.error(error);
-        mensagem.style.color = "red";
-        mensagem.textContent = "Erro ao enviar inscrição.";
+      } else {
+        msgForm.style.color = 'red';
+        msgForm.textContent = 'Erro ao enviar inscrição: ' + json.message;
       }
-    });
-  </script>
+    } catch (err) {
+      msgForm.style.color = 'red';
+      msgForm.textContent = 'Erro ao enviar inscrição.';
+      console.error(err);
+    }
+  });
+
+  // Login admin
+  const loginAdmin = document.getElementById('login-admin');
+  const adminArea = document.getElementById('admin-area');
+  const senhaInput = document.getElementById('senhaAdmin');
+  const btnLoginAdmin = document.getElementById('btnLoginAdmin');
+  const msgLogin = document.getElementById('msgLogin');
+  const tabela = document.getElementById('tabelaInscritos');
+  const btnLogout = document.getElementById('btnLogout');
+
+  btnLoginAdmin.onclick = () => {
+    if(senhaInput.value === senhaCorreta){
+      loginAdmin.style.display = 'none';
+      adminArea.style.display = 'block';
+      msgLogin.textContent = '';
+      carregarInscritos();
+    } else {
+      msgLogin.style.color = 'red';
+      msgLogin.textContent = 'Senha incorreta!';
+    }
+  };
+
+  btnLogout.onclick = () => {
+    adminArea.style.display = 'none';
+    loginAdmin.style.display = 'block';
+    senhaInput.value = '';
+    tabela.innerHTML = '';
+  };
+
+  async function carregarInscritos(){
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+
+    try {
+      const res = await fetch(url);
+      const texto = await res.text();
+      const json = JSON.parse(texto.substring(47).slice(0, -2));
+      const linhas = json.table.rows;
+
+      tabela.innerHTML = '';
+      linhas.forEach(linha => {
+        const tr = document.createElement('tr');
+        linha.c.forEach(celula => {
+          const td = document.createElement('td');
+          td.textContent = celula?.v || '';
+          tr.appendChild(td);
+        });
+        tabela.appendChild(tr);
+      });
+    } catch (err) {
+      alert('Erro ao carregar os inscritos');
+      console.error(err);
+    }
+  }
+</script>
+
 </body>
-</html> 
+</html>
