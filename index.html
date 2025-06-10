@@ -144,23 +144,23 @@
       };
 
       try {
-        const res = await fetch(scriptUrl, {
+        const res = await fetch(targetUrl, {  // <-- aqui
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(dados)
         });
 
         if (res.ok) {
-          mensagem.style.color = "green";
-          mensagem.textContent = "Inscrição enviada com sucesso!";
+          msgForm.style.color = "green";
+          msgForm.textContent = "Inscrição enviada com sucesso!";
           form.reset();
         } else {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
       } catch (error) {
         console.error("Erro ao enviar inscrição:", error);
-        mensagem.style.color = "red";
-        mensagem.textContent = "Erro ao enviar inscrição.";
+        msgForm.style.color = "red";
+        msgForm.textContent = "Erro ao enviar inscrição.";
       }
     });
 
