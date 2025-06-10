@@ -85,6 +85,62 @@
         mensagem.textContent = "Erro ao enviar inscrição.";
       }
     });
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const password = document.getElementById('admin-password').value;
+      if(password === ADMIN_PASSWORD){
+        localStorage.setItem('adminLogged', 'true');
+        showAdmin();
+      } else {
+        alert('Senha incorreta!');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('adminLogged');
+      adminSection.style.display = 'none';
+      loginSection.style.display = 'block';
+      formSection.style.display = 'block';
+    });
+
+    async function showAdmin(){
+      loginSection.style.display = 'none';
+      formSection.style.display = 'none';
+      adminSection.style.display = 'block';
+
+      inscritosTableBody.innerHTML = '<tr><td colspan="7">Carregando...</td></tr>';
+
+      // Buscar dados da planilha (pode usar Google Sheets API, para simplificar vamos buscar CSV)
+      try {
+        // URL pública do CSV export da planilha (você precisa tornar a planilha pública para visualização)
+        const sheetId = '1jUXCQgiCbY_o393mfvsrA6F_mMZIfjCAXQfazvX3W5Y';
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+        const res = await fetch(url);
+        const csv = await res.text();
+
+        // Converter CSV em array
+        const rows = csv.trim().split('\n').slice(1); // pula header
+        inscritosTableBody.innerHTML = '';
+        rows.forEach(row => {
+          const cols = row.split(',');
+          inscritosTableBody.innerHTML += `
+            <tr>
+              <td>${cols[0]}</td>
+              <td>${cols[1]}</td>
+              <td>${cols[2]}</td>
+              <td>${cols[3]}</td>
+              <td>${cols[4]}</td>
+              <td>${cols[5]}</td>
+              <td>${cols[6]}</td>
+            </tr>
+          `;
+        });
+
+      } catch (e) {
+        inscritosTableBody.innerHTML = '<tr><td colspan="7">Erro ao carregar dados.</td></tr>';
+      }
+    }
   </script>
 </body>
 </html>
