@@ -1,20 +1,62 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Granada Iate Clube - GIC</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
-    input, select, button { width: 100%; padding: 10px; margin: 8px 0; font-size: 16px; }
-    h1, h2 { text-align: center; }
-    .mensagem { text-align: center; font-weight: bold; margin-top: 10px; }
-    #admin-area { display: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    #login-admin { max-width: 300px; margin: 20px auto; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    h1,
+    h2 {
+      text-align: center;
+    }
+
+    .mensagem {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    #admin-area {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    #login-admin {
+      max-width: 300px;
+      margin: 20px auto;
+    }
   </style>
 </head>
+
 <body>
 
   <h1>Granada Iate Clube - GIC</h1>
@@ -39,7 +81,7 @@
       <option value="Lateral Esquerdo">Lateral Esquerdo</option>
       <option value="Volante">Volante</option>
       <option value="Zagueiro">Zagueiro</option>
-    </select> 
+    </select>
     <select id="classificacao" required>
       <option value="">Classificação</option>
       <option value="A">A</option>
@@ -79,104 +121,109 @@
     </table>
   </div>
 
-<script>
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbySXSJANKbvv0lhdznBT0l2BeLNkTDRXQLgH5_tFOJd/dev";
-  const sheetId = "1jUXCQgiCbY_o393mfvsrA6F_mMZIfjCAXQfazvX3W5Y";
-  const sheetName = "GIC Inscritos";
-  const senhaCorreta = "gic2024";
+  <script>
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbySXSJANKbvv0lhdznBT0l2BeLNkTDRXQLgH5_tFOJd/dev";
+    const sheetId = "1jUXCQgiCbY_o393mfvsrA6F_mMZIfjCAXQfazvX3W5Y";
+    const sheetName = "GIC Inscritos";
+    const senhaCorreta = "gic2024";
 
-  const form = document.getElementById('formInscricao');
-  const msgForm = document.getElementById('msgForm');
+    const form = document.getElementById('formInscricao');
+    const msgForm = document.getElementById('msgForm');
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
 
-    const dados = {
-      nome: document.getElementById('nome').value,
-      nascimento: document.getElementById('nascimento').value,
-      idade: document.getElementById('idade').value,
-      posicao1: document.getElementById('posicao1').value,
-      posicao2: document.getElementById('posicao2').value,
-      classificacao: document.getElementById('classificacao').value
+      const dados = {
+        nome: document.getElementById('nome').value,
+        nascimento: document.getElementById('nascimento').value,
+        idade: document.getElementById('idade').value,
+        posicao1: document.getElementById('posicao1').value,
+        posicao2: document.getElementById('posicao2').value,
+        classificacao: document.getElementById('classificacao').value
+      };
+
+      try {
+        const res = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados)
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        // Tenta parsear json (se falhar, cai no catch)
+        const json = await res.json();
+
+        if (json.status === 'sucesso') {
+          msgForm.style.color = 'green';
+          msgForm.textContent = 'Inscrição enviada com sucesso!';
+          form.reset();
+        } else {
+          throw new Error(json.message || 'Erro desconhecido no servidor');
+        }
+      } catch (err) {
+        msgForm.style.color = 'red';
+        msgForm.textContent = 'Erro ao enviar inscrição: ' + err.message;
+        console.error(err);
+      }
+    });
+
+    // Login admin
+    const loginAdmin = document.getElementById('login-admin');
+    const adminArea = document.getElementById('admin-area');
+    const senhaInput = document.getElementById('senhaAdmin');
+    const btnLoginAdmin = document.getElementById('btnLoginAdmin');
+    const msgLogin = document.getElementById('msgLogin');
+    const tabela = document.getElementById('tabelaInscritos');
+    const btnLogout = document.getElementById('btnLogout');
+
+    btnLoginAdmin.onclick = () => {
+      if (senhaInput.value === senhaCorreta) {
+        loginAdmin.style.display = 'none';
+        adminArea.style.display = 'block';
+        msgLogin.textContent = '';
+        carregarInscritos();
+      } else {
+        msgLogin.style.color = 'red';
+        msgLogin.textContent = 'Senha incorreta!';
+      }
     };
 
-    try {
-      const res = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-      });
-
-      const json = await res.json();
-
-      if(json.status === 'sucesso'){
-        msgForm.style.color = 'green';
-        msgForm.textContent = 'Inscrição enviada com sucesso!';
-        form.reset();
-      } else {
-        msgForm.style.color = 'red';
-        msgForm.textContent = 'Erro ao enviar inscrição: ' + json.message;
-      }
-    } catch (err) {
-      msgForm.style.color = 'red';
-      msgForm.textContent = 'Erro ao enviar inscrição.';
-      console.error(err);
-    }
-  });
-
-  // Login admin
-  const loginAdmin = document.getElementById('login-admin');
-  const adminArea = document.getElementById('admin-area');
-  const senhaInput = document.getElementById('senhaAdmin');
-  const btnLoginAdmin = document.getElementById('btnLoginAdmin');
-  const msgLogin = document.getElementById('msgLogin');
-  const tabela = document.getElementById('tabelaInscritos');
-  const btnLogout = document.getElementById('btnLogout');
-
-  btnLoginAdmin.onclick = () => {
-    if(senhaInput.value === senhaCorreta){
-      loginAdmin.style.display = 'none';
-      adminArea.style.display = 'block';
-      msgLogin.textContent = '';
-      carregarInscritos();
-    } else {
-      msgLogin.style.color = 'red';
-      msgLogin.textContent = 'Senha incorreta!';
-    }
-  };
-
-  btnLogout.onclick = () => {
-    adminArea.style.display = 'none';
-    loginAdmin.style.display = 'block';
-    senhaInput.value = '';
-    tabela.innerHTML = '';
-  };
-
-  async function carregarInscritos(){
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-
-    try {
-      const res = await fetch(url);
-      const texto = await res.text();
-      const json = JSON.parse(texto.substring(47).slice(0, -2));
-      const linhas = json.table.rows;
-
+    btnLogout.onclick = () => {
+      adminArea.style.display = 'none';
+      loginAdmin.style.display = 'block';
+      senhaInput.value = '';
       tabela.innerHTML = '';
-      linhas.forEach(linha => {
-        const tr = document.createElement('tr');
-        linha.c.forEach(celula => {
-          const td = document.createElement('td');
-          td.textContent = celula?.v || '';
-          tr.appendChild(td);
+    };
+
+    async function carregarInscritos() {
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+
+      try {
+        const res = await fetch(url);
+        const texto = await res.text();
+        const json = JSON.parse(texto.substring(47).slice(0, -2));
+        const linhas = json.table.rows;
+
+        tabela.innerHTML = '';
+        linhas.forEach(linha => {
+          const tr = document.createElement('tr');
+          linha.c.forEach(celula => {
+            const td = document.createElement('td');
+            td.textContent = celula?.v || '';
+            tr.appendChild(td);
+          });
+          tabela.appendChild(tr);
         });
-        tabela.appendChild(tr);
-      });
-    } catch (err) {
-      alert('Erro ao carregar os inscritos');
-      console.error(err);
+      } catch (err) {
+        alert('Erro ao carregar os inscritos');
+        console.error(err);
+      }
     }
-  }
-</script>
+  </script>
 
 </body>
+
 </html>
