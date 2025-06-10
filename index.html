@@ -2,179 +2,89 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Granada Iate Clube - GIC</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; }
-    h1 { text-align: center; }
-    form { display: flex; flex-direction: column; gap: 1rem; }
-    input, select { padding: 0.5rem; font-size: 1rem; }
-    button { padding: 0.7rem; font-size: 1rem; cursor: pointer; }
-    #admin-section { display: none; }
-    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
-    th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 10px;
+    }
+    input, select, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .mensagem {
+      text-align: center;
+      font-weight: bold;
+      color: red;
+    }
   </style>
 </head>
 <body>
   <h1>Granada Iate Clube - GIC</h1>
+  <h2>Cadastro de Jogador</h2>
 
-  <section id="form-section">
-    <h2>Cadastro de Jogador</h2>
-    <form id="register-form">
-      <input type="text" id="nomeCompleto" placeholder="Nome Completo" required />
-      <input type="date" id="dataNascimento" placeholder="Data de Nascimento" required />
-      <input type="number" id="idade" placeholder="Idade" required min="1" max="120" />
-      <input type="text" id="posicao1" placeholder="Posição 1" required />
-      <input type="text" id="posicao2" placeholder="Posição 2" />
-      <select id="classificacao" required>
-        <option value="">Classificação</option>
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-      </select>
-      <button type="submit">Enviar Inscrição</button>
-    </form>
-    <p id="msg"></p>
-  </section>
+  <form id="formInscricao">
+    <input type="text" id="nome" placeholder="Nome Completo" required />
+    <input type="date" id="nascimento" required />
+    <input type="number" id="idade" placeholder="Idade" required />
+    <input type="text" id="posicao1" placeholder="Posição 1" required />
+    <input type="text" id="posicao2" placeholder="Posição 2" required />
+    <select id="classificacao" required>
+      <option value="">Classificação</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+    </select>
+    <button type="submit">Enviar Inscrição</button>
+  </form>
 
-  <section id="login-section">
-    <h2>Login Admin</h2>
-    <form id="login-form">
-      <input type="password" id="admin-password" placeholder="Senha do Admin" required />
-      <button type="submit">Entrar</button>
-    </form>
-  </section>
-
-  <section id="admin-section">
-    <h2>Lista de Inscritos</h2>
-    <button id="logout-btn">Sair</button>
-    <table id="inscritos-table">
-      <thead>
-        <tr>
-          <th>Nome Completo</th>
-          <th>Data Nascimento</th>
-          <th>Idade</th>
-          <th>Posição 1</th>
-          <th>Posição 2</th>
-          <th>Classificação</th>
-          <th>Timestamp</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
+  <p class="mensagem" id="mensagem"></p>
 
   <script>
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycby6cOMjA7AyXVGZAKbywWcbwQUXYqCrCE7LkF4pXptY5L1HRf2IfF9-K7xViWVGsX6N/exec';
+    const scriptUrl = "https://script.google.com/macros/s/AKfycby6cOMjA7AyXVGZAKbywWcbwQUXYqCrCE7LkF4pXptY5L1HRf2IfF9-K7xViWVGsX6N/exec"; // sua URL aqui
 
-    const formSection = document.getElementById('form-section');
-    const loginSection = document.getElementById('login-section');
-    const adminSection = document.getElementById('admin-section');
-    const msg = document.getElementById('msg');
+    const form = document.getElementById("formInscricao");
+    const mensagem = document.getElementById("mensagem");
 
-    const registerForm = document.getElementById('register-form');
-    const loginForm = document.getElementById('login-form');
-    const logoutBtn = document.getElementById('logout-btn');
-    const inscritosTableBody = document.querySelector('#inscritos-table tbody');
-
-    // Senha admin (altere aqui)
-    const ADMIN_PASSWORD = 'admin123';
-
-    // Mostrar admin se já logado
-    if(localStorage.getItem('adminLogged') === 'true'){
-      showAdmin();
-    }
-
-    registerForm.addEventListener('submit', async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      msg.textContent = '';
 
-      const data = {
-        nomeCompleto: document.getElementById('nomeCompleto').value,
-        dataNascimento: document.getElementById('dataNascimento').value,
-        idade: document.getElementById('idade').value,
-        posicao1: document.getElementById('posicao1').value,
-        posicao2: document.getElementById('posicao2').value,
-        classificacao: document.getElementById('classificacao').value,
+      const dados = {
+        nome: document.getElementById("nome").value,
+        nascimento: document.getElementById("nascimento").value,
+        idade: document.getElementById("idade").value,
+        posicao1: document.getElementById("posicao1").value,
+        posicao2: document.getElementById("posicao2").value,
+        classificacao: document.getElementById("classificacao").value
       };
 
       try {
-        const response = await fetch(scriptUrl, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: { 'Content-Type': 'application/json' }
+        await fetch(scriptUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(dados),
+          mode: "no-cors"
         });
-        const result = await response.json();
-        if(result.result === 'success'){
-          msg.style.color = 'green';
-          msg.textContent = 'Inscrição enviada com sucesso!';
-          registerForm.reset();
-        } else {
-          msg.style.color = 'red';
-          msg.textContent = 'Erro ao enviar inscrição.';
-        }
+        mensagem.style.color = "green";
+        mensagem.textContent = "Inscrição enviada com sucesso!";
+        form.reset();
       } catch (error) {
-        msg.style.color = 'red';
-        msg.textContent = 'Erro na comunicação.';
+        console.error(error);
+        mensagem.style.color = "red";
+        mensagem.textContent = "Erro ao enviar inscrição.";
       }
     });
-
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const password = document.getElementById('admin-password').value;
-      if(password === ADMIN_PASSWORD){
-        localStorage.setItem('adminLogged', 'true');
-        showAdmin();
-      } else {
-        alert('Senha incorreta!');
-      }
-    });
-
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('adminLogged');
-      adminSection.style.display = 'none';
-      loginSection.style.display = 'block';
-      formSection.style.display = 'block';
-    });
-
-    async function showAdmin(){
-      loginSection.style.display = 'none';
-      formSection.style.display = 'none';
-      adminSection.style.display = 'block';
-
-      inscritosTableBody.innerHTML = '<tr><td colspan="7">Carregando...</td></tr>';
-
-      // Buscar dados da planilha (pode usar Google Sheets API, para simplificar vamos buscar CSV)
-      try {
-        // URL pública do CSV export da planilha (você precisa tornar a planilha pública para visualização)
-        const sheetId = '1jUXCQgiCbY_o393mfvsrA6F_mMZIfjCAXQfazvX3W5Y';
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-
-        const res = await fetch(url);
-        const csv = await res.text();
-
-        // Converter CSV em array
-        const rows = csv.trim().split('\n').slice(1); // pula header
-        inscritosTableBody.innerHTML = '';
-        rows.forEach(row => {
-          const cols = row.split(',');
-          inscritosTableBody.innerHTML += `
-            <tr>
-              <td>${cols[0]}</td>
-              <td>${cols[1]}</td>
-              <td>${cols[2]}</td>
-              <td>${cols[3]}</td>
-              <td>${cols[4]}</td>
-              <td>${cols[5]}</td>
-              <td>${cols[6]}</td>
-            </tr>
-          `;
-        });
-
-      } catch (e) {
-        inscritosTableBody.innerHTML = '<tr><td colspan="7">Erro ao carregar dados.</td></tr>';
-      }
-    }
   </script>
 </body>
 </html>
