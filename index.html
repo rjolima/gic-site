@@ -144,30 +144,23 @@
       };
 
       try {
-       const res = await fetch(proxyUrl + targetUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(scriptUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(dados)
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        // Tenta parsear json (se falhar, cai no catch)
-        const json = await res.json();
-
-        if (json.status === 'sucesso') {
-          msgForm.style.color = 'green';
-          msgForm.textContent = 'Inscrição enviada com sucesso!';
+        if (res.ok) {
+          mensagem.style.color = "green";
+          mensagem.textContent = "Inscrição enviada com sucesso!";
           form.reset();
         } else {
-          throw new Error(json.message || 'Erro desconhecido no servidor');
+          throw new Error(`HTTP error! status: ${res.status}`);
         }
-      } catch (err) {
-        msgForm.style.color = 'red';
-        msgForm.textContent = 'Erro ao enviar inscrição: ' + err.message;
-        console.error(err);
+      } catch (error) {
+        console.error("Erro ao enviar inscrição:", error);
+        mensagem.style.color = "red";
+        mensagem.textContent = "Erro ao enviar inscrição.";
       }
     });
 
